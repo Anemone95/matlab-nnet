@@ -1,11 +1,11 @@
-function [net,ps,ts]=EzBP(P,T,x);
-    % input x个体初始权值和阀值
-    % input P样本输入(n line,1 col)
-    % input T样本输出(n line,1 col)
-
-    % output net BP神经网络
-    % output ps  输入值归一化矩阵
-    % output ts  输出值归一化矩阵
+function [net,ps,ts,perf]=EzBP(P,T,x,P_test,T_test)
+    %%
+    %x个体初始权值和阀值
+    %P样本输入
+    %T样本输出
+    %hiddenNum隐藏层个数
+    % X=mapminmax('apply',X,ps);
+    % Y=mapminmax('reverse',Y,ts);
 
     nntwarn off
     P=P';
@@ -14,19 +14,30 @@ function [net,ps,ts]=EzBP(P,T,x);
     [T,ts]=mapminmax(T);
     [pr,pc]=size(P);
     [tr,tc]=size(T);
-
+    %chooseTest=3901:4000;
+    % chooseTest=randi(tc,1,floor(tc*0.1));
+    % chooseTrain=1:tc;
+    % chooseTrain=setdiff(chooseTrain,chooseTest);
+    % P_test=P(:,chooseTest);
+    % T_test=T(:,chooseTest);
+    % P=P(:,chooseTrain);
+    % T=T(:,chooseTrain);
 
     inputNum=pr;
     outputNum=tr;
     hiddenNum=2*inputNum+1;
+    %net=newff(minmax(P),[hiddenNum,outputNum],{'tansig','tansig'},'trainlm'); %隐含层 输出层
     net=newff(minmax(P),[hiddenNum,outputNum],{'tansig','tansig'}); %隐含层 输出层
+
 
     net.trainParam.epochs=1e5;
     net.trainParam.goal=1e-5;
     net.trainParam.lr=0.05;
     net.trainParam.show=10;
-%    net.trainParam.showwindow=false;
-    if nargin==3
+
+    if nargin>=3
+        net.trainParam.showwindow=false;
+        net.trainParam.time=30;
         w1num=inputNum*hiddenNum;
         w2num=outputNum*hiddenNum;
         w1=x(1:w1num);
@@ -41,5 +52,20 @@ function [net,ps,ts]=EzBP(P,T,x);
 
     net=train(net,P,T);
 
-    RES={net,ps,ts};
+    % Y=sim(net,P_test);
+    % Y=mapminmax('reverse',Y,ts);
+    % T_test=mapminmax('reverse',T_test,ts);
+    % err=norm(Y-T_test);
+    %
+    % Y=net(P_test);
+    % perf=perform(net,t,y);
+
+    if nargin==5
+        P_test=mapminmax('apply',P_test',ps);
+        T_test=mapminmax('apply',T_test',ts);
+        perf = mse(net,P_test,T_test);
+    else
+        pref=-1;
+    end
+    % RES={net,perf};
 end

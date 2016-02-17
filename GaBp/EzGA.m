@@ -75,6 +75,7 @@ function [bestfitness,x]=EzGA(bound,OptFun,sizepop,attach)
         avgfitness=sum(individuals.fitness)/sizepop;
         
         traceA=[traceA;avgfitness bestfitness]; %记录每一代进化中最好的适应度和平均适应度
+        disp(bestfitness)
         waitbar(i/maxgen,h,sprintf('Now Generation:%d',i));
         if i>30
             if sum(diff(traceA(end-30:end,2)))==0
